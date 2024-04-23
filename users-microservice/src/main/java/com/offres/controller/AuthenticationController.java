@@ -26,6 +26,7 @@ import com.offres.utils.JwtUtil;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 public class AuthenticationController {
@@ -97,7 +98,7 @@ public class AuthenticationController {
     }
 
     @GetMapping("/api/user/{userId}")
-    public ResponseEntity<UserDto> getUserById(@PathVariable Long userId) {
+    public ResponseEntity<UserDto> getUserById(@PathVariable UUID userId) {
         UserDto userDto = userService.getUserById(userId);
         if (userDto != null) {
             return ResponseEntity.ok(userDto);

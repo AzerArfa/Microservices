@@ -1,8 +1,7 @@
 package com.offres.entity;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import java.util.UUID;
 
 import com.offres.dto.UserDto;
 import com.offres.enums.UserRole;
@@ -15,9 +14,10 @@ import lombok.Data;
 @Table(name = "users")
 public class User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	 @Id
+	    @GeneratedValue(strategy = GenerationType.AUTO)
+	    @Column(columnDefinition = "BINARY(16)")
+	    private UUID id;
 
     private String email;
 

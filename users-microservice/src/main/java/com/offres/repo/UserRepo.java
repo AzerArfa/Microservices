@@ -8,9 +8,10 @@ import com.offres.enums.UserRole;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface UserRepo extends JpaRepository<User, Long> {
+public interface UserRepo extends JpaRepository<User, UUID> {
 
     Optional<User> findFirstByEmail(String email);
 

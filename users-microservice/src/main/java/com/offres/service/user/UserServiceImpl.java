@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 
 @Service
@@ -51,7 +52,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto getUserById(Long userId) {
+    public UserDto getUserById(UUID userId) {
         UserDto userDto = new UserDto();
         Optional<User> optionalUser = userRepo.findById(userId);
         if (optionalUser.isPresent()) {

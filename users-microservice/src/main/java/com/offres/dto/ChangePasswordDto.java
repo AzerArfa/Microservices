@@ -1,11 +1,13 @@
 package com.offres.dto;
 
+import java.util.UUID;
+
 import lombok.Data;
 
 @Data
 public class ChangePasswordDto {
 
-    private Long id;
+    private UUID id;
 
     private String oldPassword;
 

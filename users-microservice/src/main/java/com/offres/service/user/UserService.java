@@ -9,6 +9,7 @@ import com.offres.dto.UserDto;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 public interface UserService {
 
@@ -16,7 +17,7 @@ public interface UserService {
 
      Boolean hasUserWithEmail(String email);
 
-     UserDto getUserById(Long userId);
+     UserDto getUserById(UUID userId);
 
      UserDto updateUser(UserDto userDto) throws IOException;
      List<UserDto> getAllUsers(); 
