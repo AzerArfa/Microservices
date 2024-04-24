@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
+import java.util.Date;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
         user.setEmail(signupRequest.getEmail());
         user.setName(signupRequest.getName());
         user.setPassword(new BCryptPasswordEncoder().encode(signupRequest.getPassword()));
-        user.setRole(UserRole.CUSTOMER);
+        user.setRole(UserRole.UTILISATEUR);
         User createdUser = userRepo.save(user);
       
         UserDto createdUserDto = new UserDto();
@@ -71,6 +71,12 @@ public class UserServiceImpl implements UserService {
             userDtos.add(userDto);
         }
         return userDtos;
+    }
+    public boolean checkIfPasswordNeedsUpdate(User user) {
+        Date lastCreationDate = user.getCreationDate();
+        long differenceInMilliseconds = new Date().getTime() - lastCreationDate.getTime();
+        long differenceInDays = differenceInMilliseconds / (1000 * 60 * 60 * 24);
+        return differenceInDays >= 30;
     }
     @Override
     public UserDto updateUser(UserDto userDto) throws IOException {

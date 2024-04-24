@@ -3,6 +3,7 @@ package com.offres.dto;
 
 import lombok.Data;
 
+import java.util.Date;
 import java.util.UUID;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -19,7 +20,10 @@ public class UserDto {
     private String name;
 
     private UserRole role;
+    private String societe;  // New field
 
+  
+    private Date creationDate;
     private MultipartFile img;
 
     private byte[] returnedImg;

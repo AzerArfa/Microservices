@@ -52,7 +52,7 @@ public class AuthenticationController {
     public static final String TOKEN_PREFIX = "Bearer ";
     public static final String HEADER_STRING = "Authorization";
 
-    @GetMapping("/api/users")
+    @GetMapping("/users")
     public ResponseEntity<List<UserDto>> getAllUsers() {
         List<UserDto> users = userService.getAllUsers();
         if (!users.isEmpty()) {
@@ -62,32 +62,50 @@ public class AuthenticationController {
         }
     }
     @PostMapping("/authenticate")
-    public void createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest, HttpServletResponse response) throws BadCredentialsException, DisabledException, UsernameNotFoundException, IOException, JSONException, ServletException {
+    public void createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest, HttpServletResponse response) throws IOException, ServletException {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(), authenticationRequest.getPassword()));
         } catch (BadCredentialsException e) {
-            throw new BadCredentialsException("Incorrect username or password.");
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Incorrect username or password.");
+            return;
         } catch (DisabledException disabledException) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "User is not activated");
             return;
         }
+
         final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getUsername());
         Optional<User> optionalUser = userRepo.findFirstByEmail(userDetails.getUsername());
-        final String jwt = jwtUtil.generateToken(userDetails.getUsername());
 
-        if (optionalUser.isPresent()) {
-            response.getWriter().write(new JSONObject()
-                    .put("userId", optionalUser.get().getId())
-                    .put("role", optionalUser.get().getRole())
-                    .toString()
-            );
-            response.addHeader("Access-Control-Expose-Headers", "Authorization");
-            response.addHeader("Access-Control-Allow-Headers", "Authorization, X-PINGOTHER, Origin, X-Requested-With, Content-Type, Accept, X-Custom-header");
-            response.addHeader(HEADER_STRING, TOKEN_PREFIX + jwt);
+        try {
+            if (optionalUser.isPresent()) {
+                User user = optionalUser.get();
+                // Check if the password needs to be updated
+                if (userService.checkIfPasswordNeedsUpdate(user)) {
+                	 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                	    response.getWriter().write("Password change required.");
+                	    response.getWriter().flush();
+                	    return;
+                }
+
+                final String jwt = jwtUtil.generateToken(userDetails.getUsername());
+
+                JSONObject userJson = new JSONObject()
+                        .put("userId", user.getId())
+                        .put("role", user.getRole());
+
+                response.getWriter().write(userJson.toString());
+                response.addHeader("Access-Control-Expose-Headers", "Authorization");
+                response.addHeader("Access-Control-Allow-Headers", "Authorization, X-PINGOTHER, Origin, X-Requested-With, Content-Type, Accept, X-Custom-header");
+                response.addHeader(HEADER_STRING, TOKEN_PREFIX + jwt);
+            } else {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found.");
+            }
+        } catch (JSONException e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Error creating JSON response.");
         }
     }
 
-    @PostMapping("/api/update")
+    @PostMapping("/update")
     public ResponseEntity<UserDto> updateProfile(@ModelAttribute UserDto userDto) throws IOException {
         UserDto updatedUser = userService.updateUser(userDto);
         if (updatedUser != null) {
@@ -97,7 +115,7 @@ public class AuthenticationController {
         }
     }
 
-    @GetMapping("/api/user/{userId}")
+    @GetMapping("/user/{userId}")
     public ResponseEntity<UserDto> getUserById(@PathVariable UUID userId) {
         UserDto userDto = userService.getUserById(userId);
         if (userDto != null) {
@@ -108,7 +126,7 @@ public class AuthenticationController {
     }
 
     
-    @PostMapping("/api/updatePassword")
+    @PostMapping("/updatePassword")
     public ResponseEntity<?> updatePassword(@RequestBody ChangePasswordDto changePasswordDto) {
         try {
             return userService.updatePasswordById(changePasswordDto);

@@ -1,6 +1,7 @@
 package com.offres.entity;
 
 
+import java.util.Date;
 import java.util.UUID;
 
 import com.offres.dto.UserDto;
@@ -24,7 +25,10 @@ public class User {
     private String password;
 
     private String name;
+    private String societe;  
 
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date creationDate = new Date();
     private UserRole role;
 
     @Lob
