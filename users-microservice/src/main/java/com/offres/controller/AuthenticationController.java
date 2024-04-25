@@ -61,8 +61,9 @@ public class AuthenticationController {
             return ResponseEntity.notFound().build();
         }
     }
+
     @PostMapping("/authenticate")
-    public void createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest, HttpServletResponse response) throws IOException, ServletException {
+    public void createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest, HttpServletResponse response) throws IOException {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(), authenticationRequest.getPassword()));
         } catch (BadCredentialsException e) {
@@ -81,17 +82,17 @@ public class AuthenticationController {
                 User user = optionalUser.get();
                 // Check if the password needs to be updated
                 if (userService.checkIfPasswordNeedsUpdate(user)) {
-                	 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                	    response.getWriter().write("Password change required.");
-                	    response.getWriter().flush();
-                	    return;
+                	response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                	response.getWriter().write("Password change required.");
+                	response.getWriter().flush();
+                	return;
                 }
 
-                final String jwt = jwtUtil.generateToken(userDetails.getUsername());
+                final String jwt = jwtUtil.generateToken(userDetails); // Corrected line
 
                 JSONObject userJson = new JSONObject()
                         .put("userId", user.getId())
-                        .put("role", user.getRole());
+                        .put("role", user.getRole().name()); // Make sure to convert the role to String
 
                 response.getWriter().write(userJson.toString());
                 response.addHeader("Access-Control-Expose-Headers", "Authorization");
